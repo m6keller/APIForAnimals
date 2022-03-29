@@ -128,7 +128,7 @@ router.post( '/api/update/animal', (req: Request, res: Response, next ) => {
            console.log('record updated');
        });
    }
-   return res.redirect( "/api/animals" );
+   return res.redirect( "/" );
 });
  
  
