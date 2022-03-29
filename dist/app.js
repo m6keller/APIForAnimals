@@ -8,7 +8,6 @@ var mysql_1 = __importDefault(require("mysql"));
 var app = (0, express_1.default)();
 var router = express_1.default.Router();
 var bodyParser = require('body-parser');
-var errorHandler = require('/errorHandler');
 // connection can be set from command line with:
 // // pscale connect animals dev --execute "npm run dev"
 var connection = mysql_1.default.createConnection(process.env.DATABASE_URL || "");
@@ -17,6 +16,27 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express_1.default.static('public'));
 app.use('/', router);
 app.use(errorHandler);
+var ApiError = /** @class */ (function () {
+    function ApiError(code, message) {
+        this.code = code;
+        this.message = message;
+    }
+    ApiError.badRequest = function (msg) {
+        return new ApiError(400, msg);
+    };
+    ApiError.internalError = function (msg) {
+        return new ApiError(500, msg);
+    };
+    return ApiError;
+}());
+function errorHandler(err, req, res, next) {
+    console.error(err);
+    if (err instanceof ApiError) {
+        res.status(err.code).json(err.message);
+        return;
+    }
+    res.status(500).json("something went wrong");
+}
 app.get('/', function (req, res) {
     res.sendFile(__dirname + "/index.html");
 });
@@ -31,12 +51,16 @@ app.get("/api/animals", function (req, res) {
         return res.send(rows);
     });
 });
-app.get("/api/animals/:name", function (req, res) {
+app.get("/api/animals/:name", function (req, res, next) {
     var name = req.params.name;
     var query = "SELECT * FROM Animal_Data WHERE name = \"" + name + "\"";
     connection.query(query, function (err, rows) {
         if (err)
             throw err;
+        if (rows.length === 0) {
+            next(ApiError.badRequest("no record of this animal in the database"));
+            return;
+        }
         return res.send(rows);
     });
 });
@@ -46,8 +70,7 @@ router.post('/update/animal', function (req, res, next) {
     var newLatinName = req.body.new_latin_name || "";
     var newImage = req.body.new_image || "";
     if (newImage === "" && newLatinName === "" && newName === "") {
-        next();
-        res.status(400).json("No data entered");
+        next(ApiError.badRequest("no information inputted"));
         return;
     }
     if (newImage != "") {
@@ -94,19 +117,14 @@ router.post('/insert/animal', function (req, res, next) {
 });
 app.get('/delete/name/:name', function (req, res, next) {
     var name = req.params.name;
-    var check = "SELECT EXISTS(SELECT * FROM Animal_Data WHERE name = \"" + name + "\")";
-    connection.query(check, function (err, result) {
-        if (err)
-            throw err;
-        if (result === 0) {
-            next(ApiError.badRequest("no record of this animal in the database"));
-            return;
-        }
-    });
     var query = "DELETE FROM Animal_Data WHERE name = " + name;
     connection.query(query, [name], function (err, result) {
         if (err)
             throw err;
+        if (result.length === 0) {
+            next(ApiError.badRequest("no record of this animal in the database"));
+            return;
+        }
         console.log(result.affectedRows + " record(s) updated");
     });
     res.redirect('/');
@@ -117,6 +135,10 @@ app.get('/delete/id/:id', function (req, res, next) {
     connection.query(query, [id], function (err, result) {
         if (err)
             throw err;
+        if (result.length === 0) {
+            next(ApiError.badRequest("no record of this animal in the database"));
+            return;
+        }
         console.log(result.affectedRows + " record(s) updated");
     });
     res.redirect('/');

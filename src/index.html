@@ -7,11 +7,12 @@
     <title>Add an Animal</title>
   </head>
   <body>
+    <h1>Create a new animal</h1>
     <form
       class="m-auto"
       style="max-width: 800px"
       method="POST"
-      action="/insert/animal"
+      action="/api/insert/animal"
     >
       <p>Animal Name</p>
       <input type="text" id="name" name="name" />
@@ -19,6 +20,38 @@
       <input type="text" id="latin_name" name="latin_name" />
       <p>Image URL</p>
       <input type="text" id="image" name="image" />
+      <button id="submit-button" class="btn btn-primary btn-lg" type="submit">
+        Submit
+      </button>
+    </form>
+    <h1>Search for an animal</h1>
+    <form
+      class="m-auto"
+      style="max-width: 800px"
+      action="/api/search"
+      method="POST"
+    >
+      <p>Search</p>
+      <input type="text" id="search" name="search" />
+      <button id="submit-button" class="btn btn-primary btn-lg" type="submit">
+        Submit
+      </button>
+    </form>
+    <h1>Update a pre-existing animal</h1>
+    <form
+      class="m-auto"
+      style="max-width: 800px"
+      method="POST"
+      action="/api/update/animal"
+    >
+      <p>Current Animal Name</p>
+      <input type="text" id="name" name="name" />
+      <p>New Animal Name</p>
+      <input type="text" id="new_name" name="new_name" />
+      <p>New Latin Name</p>
+      <input type="text" id="new_latin_name" name="new_latin_name" />
+      <p>New Image URL</p>
+      <input type="text" id="new_image" name="new_image" />
       <button id="submit-button" class="btn btn-primary btn-lg" type="submit">
         Submit
       </button>
