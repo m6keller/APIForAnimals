@@ -59,7 +59,14 @@ app.get( "/api/animals/name/:name", (req: Request, res: Response, next ) => {
 });
  
 app.get( "/api/animals/id/:id", (req: Request, res: Response, next ) => {
-    const id: number = +req.params.id;
+    const id: any = req.params.id;
+    console.log( isNaN(id) );
+    if( isNaN(id)) {
+        console.log( "not number" );
+        const error = new Error("Please use a number as ID")
+        next( error.message );
+        return;
+    }  
     const query = "SELECT * FROM Animal_Data WHERE id = " + id;
     connection.query( query, (err, rows) => {
         if( err ) throw err;
@@ -73,11 +80,9 @@ app.get( "/api/animals/id/:id", (req: Request, res: Response, next ) => {
 });
  
 router.post('/api/insert/animal', (req: Request, res: Response, next ) => {
-  
     var name: string = req.body.name || "";
     var latin_name: string = req.body.latin_name || "";
     var image: string = req.body.image || "";
-  
     if( name === "" ) {
         const error = new Error("message has no content")
         next( error.message );
@@ -89,9 +94,9 @@ router.post('/api/insert/animal', (req: Request, res: Response, next ) => {
         if (err) throw err;
         console.log('record inserted');
     });
-   
     return res.redirect('/');  
- });
+});
+
 router.post( '/api/update/animal', (req: Request, res: Response, next ) => {
    var name: string = req.body.name;
    var newName: string = req.body.new_name
@@ -150,14 +155,12 @@ app.get('/api/delete/name/:name', function(req: Request, res: Response, next) {
  
 app.get('/api/delete/id/:id', function(req, res, next) {
     var id: any = req.params.id;
-    try {
-        Number(id);
-    }
-    catch (e) {
-        const error = new Error("Please input a number")
+    if( isNaN(id)) {
+        console.log( "not number" );
+        const error = new Error("Please use a number as ID")
         next( error.message );
         return;
-    }        
+    }  
     var check = "SELECT * FROM Animal_Data WHERE id = " + id;
     connection.query(check, [id], function (err, result) {
         if (err) throw err;
