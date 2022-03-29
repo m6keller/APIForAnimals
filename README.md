@@ -1,6 +1,6 @@
 # AnimalAPI
 
-API to read from, write to, and delete from an online SQL Database using MySQL
+API to read from, write to, delete from, and update an online SQL Database using MySQL
 
 Requires Express.js
 Requires Nodemon
